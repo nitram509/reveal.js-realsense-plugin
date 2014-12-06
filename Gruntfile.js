@@ -27,20 +27,27 @@ module.exports = function (grunt) {
       }
     },
 
+    copy: {
+      build: {
+        src: 'build/generated/realsense.js',
+        dest: 'build/realsense.min.js'
+      }
+    },
+
     concat: {
       options: {
         separator: '\n// *************************************************************************** //\n'
       },
       dist: {
-        src: ['build/realsense.min.js', 'lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js' ],
+        src: ['lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js', 'build/realsense.min.js' ],
         dest: 'realsense.js'
       }
     },
 
     watch: {
       scripts: {
-        files: ['src/**/*.*'],
-        tasks: ['default'],
+        files: ['src/**/*.*','test/**/*.*'],
+        tasks: ['development'],
         options: {
           spawn: false
         }
@@ -53,8 +60,11 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-typescript');
 
+
   grunt.registerTask('default', ['typescript', 'uglify', 'concat']);
+  grunt.registerTask('development', ['typescript', 'copy', 'concat']);
 
 };

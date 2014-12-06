@@ -1,6 +1,3 @@
-/*! reveal.js-realsense-plugin, v1.0.0, 2014-12-06 */
-
-// *************************************************************************** //
 /*******************************************************************************
 
  INTEL CORPORATION PROPRIETARY INFORMATION
@@ -1300,3 +1297,82 @@ function RealSenseInfo(components, callback) {
     } catch (exception) {
     }
 }
+
+// *************************************************************************** //
+/// <reference path="./realsense.d.ts" />
+var RealSensePlugin = (function () {
+    function RealSensePlugin() {
+    }
+    RealSensePlugin.prototype.checkPlatformCompatibility = function () {
+        RealSenseInfo(['hand'], function (info) {
+            if (info.IsReady == true) {
+            }
+            else {
+            }
+        });
+    };
+    RealSensePlugin.prototype.onHandData = function (mid, module, data) {
+        console.log("yeah");
+    };
+    RealSensePlugin.prototype.start = function () {
+        var _this = this;
+        document.getElementById("Start").disabled = true;
+        PXCMSenseManager_CreateInstance().then(function (result) {
+            _this.sense = result;
+            return _this.sense.EnableHand(_this.onHandData);
+        }).then(function (result) {
+            _this.handModule = result;
+            _this.status('Init started');
+            return _this.sense.Init(_this.onConnect, _this.onStatus);
+        }).then(function (result) {
+            return _this.handModule.CreateActiveConfiguration();
+        }).then(function (result) {
+            _this.handConfiguration = result;
+            if (document.getElementById("alerts")['checked'])
+                return _this.handConfiguration.EnableAllAlerts();
+            else
+                return _this.handConfiguration.DisableAllAlerts();
+        }).then(function (result) {
+            if (document.getElementById("gestures")['checked'])
+                return _this.handConfiguration.EnableAllGestures(false);
+            else
+                return _this.handConfiguration.DisableAllGestures();
+        }).then(function (result) {
+            return _this.handConfiguration.ApplyChanges();
+        }).then(function (result) {
+            return _this.sense.QueryCaptureManager();
+        }).then(function (capture) {
+            return capture.QueryImageSize(pxcmConst.PXCMCapture.STREAM_TYPE_DEPTH);
+        }).then(function (result) {
+            _this.imageSize = result.size;
+            return _this.sense.StreamFrames();
+        }).then(function (result) {
+            _this.status('Streaming ' + _this.imageSize.width + 'x' + _this.imageSize.height);
+            document.getElementById("Stop").disabled = false;
+        }).catch(function (error) {
+            _this.status('Init failed: ' + JSON.stringify(error));
+            document.getElementById("Start").disabled = false;
+        });
+    };
+    RealSensePlugin.prototype.status = function (s) {
+    };
+    RealSensePlugin.prototype.onConnect = function (data) {
+        if (data.connected == false) {
+        }
+    };
+    RealSensePlugin.prototype.onStatus = function (data) {
+        if (data.sts < 0) {
+            this.status('Error ' + data.sts);
+            this.clear();
+        }
+    };
+    RealSensePlugin.prototype.clear = function () {
+        //$('#alerts_status').text('');
+        //$('#gestures_status').text('');
+        //document.getElementById("Start").disabled = false;
+        //var canvas = document.getElementById('myCanvas');
+        //var context = canvas.getContext('2d');
+        //context.clearRect(0, 0, canvas.width, canvas.height);
+    };
+    return RealSensePlugin;
+})();
