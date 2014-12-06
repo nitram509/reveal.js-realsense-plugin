@@ -3,12 +3,26 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
+    typescript: {
+      main: {
+        src: ['src/**/*.ts'],
+        dest: 'build/generated',
+        options: {
+          //module: 'namespace',
+          target: 'e35',
+          basePath: 'src/',
+          sourceMap: false,
+          declaration: false
+        }
+      }
+    },
+
     uglify: {
       options: {
         banner: '/*! <%= pkg.name %>, v<%= pkg.version %>, <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
-        src: 'src/realsense.js',
+        src: 'build/generated/realsense.js',
         dest: 'build/realsense.min.js'
       }
     },
@@ -25,7 +39,7 @@ module.exports = function (grunt) {
 
     watch: {
       scripts: {
-        files: ['src/**/*.js'],
+        files: ['src/**/*.*'],
         tasks: ['default'],
         options: {
           spawn: false
@@ -39,8 +53,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-typescript');
 
-
-  grunt.registerTask('default', ['uglify', 'concat']);
+  grunt.registerTask('default', ['typescript', 'uglify', 'concat']);
 
 };
