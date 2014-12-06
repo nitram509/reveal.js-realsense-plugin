@@ -1,0 +1,27 @@
+{
+  "name": "reveal.js-realsense-plugin",
+  "version": "1.0.0",
+  "description": "A plugin for reveal.js (by Hakim El Hattab) that lets you control slides via Intel RealSense input devices.",
+  "main": "realsense.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:nitram509/reveal.js-realsense-plugin.git"
+  },
+  "keywords": [
+    "reveal.js",
+    "plugin",
+    "intel realsense",
+    "realsense",
+    "gestures",
+    "gesture control"
+  ],
+  "author": "Martin W. Kirst",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nitram509/reveal.js-realsense-plugin/issues"
+  },
+  "homepage": "https://github.com/nitram509/reveal.js-realsense-plugin"
+}
