@@ -29,10 +29,10 @@ module.exports = function (grunt) {
 
     concat: {
       options: {
-        separator: '\n'
+        separator: '\n// *************************************************************************** //\n'
       },
       dist: {
-        src: ['build/realsense.min.js'],
+        src: ['build/realsense.min.js', 'lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js' ],
         dest: 'realsense.js'
       }
     },

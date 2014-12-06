@@ -27,7 +27,6 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "~2.1.1",
-    "jquery.promises": "~1.0.1"
+    "jquery": "~2.1.1"
   }
 }
