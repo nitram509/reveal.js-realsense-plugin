@@ -1,0 +1,33 @@
+{
+  "name": "reveal.js-realsense-plugin",
+  "version": "1.0.0",
+  "authors": [
+    "nitram509 <maki@bitkings.de>"
+  ],
+  "description": "A plugin for reveal.js (by Hakim El Hattab) that lets you control slides via Intel RealSense input devices.",
+  "main": "realsense.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "reveal.js",
+    "plugin",
+    "intel realsense",
+    "realsense",
+    "gestures",
+    "gesture control"
+  ],
+  "license": "ISC",
+  "homepage": "https://github.com/nitram509/reveal.js-realsense-plugin",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "jquery.promises": "~1.0.1"
+  }
+}
