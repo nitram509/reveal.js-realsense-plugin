@@ -7,9 +7,6 @@ class RealSensePlugin {
   private handModule:PXCMHandModule;
   private handConfiguration:PXCMHandConfiguration;
 
-  private extremityData_start:ExtremityData[];
-  private extremityData_end:ExtremityData[];
-
   public checkPlatformCompatibility() {
     RealSenseInfo(['hand'], function (info) {
       if (info.IsReady == true) {
@@ -84,24 +81,26 @@ class RealSensePlugin {
     for (var g = 0; g < data.gestures.length; g++) {
       var gesture:GestureData = data.gestures[g];
       if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_START) {
-        //console.log("SWIPE_START - " + JSON.stringify(data));
-        this.extremityData_start = data.hands[0].extremityPoints;
+        // TODO: does this state need to be tracked ?
       }
       if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_END) {
-        //console.log("SWIPE_END - " + JSON.stringify(data));
-        this.extremityData_end = data.hands[0].extremityPoints;
-        this.calculateSwipeDirection("left", EXTREMITY_INDEX.EXTREMITY_LEFTMOST);
-        this.calculateSwipeDirection("center", EXTREMITY_INDEX.EXTREMITY_CENTER);
-        this.calculateSwipeDirection("rigth", EXTREMITY_INDEX.EXTREMITY_RIGHTMOST);
+        // TODO: what if no hands ???  what if more hands ???
+        if (data.hands[0].bodySide == BodySideType.BODY_SIDE_RIGHT) {
+          this.onSwipeRight2Left();
+        }
+        if (data.hands[0].bodySide == BodySideType.BODY_SIDE_LEFT) {
+          this.onSwipeLeft2Right();
+        }
       }
     }
   }
 
-  private calculateSwipeDirection(name:string, index:number):void {
-    var x = this.extremityData_start[index].pointWorld.x - this.extremityData_end[index].pointWorld.x;
-    var y = this.extremityData_start[index].pointWorld.y - this.extremityData_end[index].pointWorld.y;
-    var z = this.extremityData_start[index].pointWorld.z - this.extremityData_end[index].pointWorld.z;
-    console.log("swipe direction (" + name + "): { x:" + x + ", y:" + y + ", z:" + z);
+  private onSwipeRight2Left() {
+    console.log("SWIPE right -> left");
+  }
+
+  private onSwipeLeft2Right() {
+    console.log("SWIPE left -> right");
   }
 
   public start():void {

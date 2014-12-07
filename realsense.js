@@ -1355,23 +1355,23 @@ var RealSensePlugin = (function () {
         for (var g = 0; g < data.gestures.length; g++) {
             var gesture = data.gestures[g];
             if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
-                //console.log("SWIPE_START - " + JSON.stringify(data));
-                this.extremityData_start = data.hands[0].extremityPoints;
             }
             if (gesture.name == 'swipe' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                //console.log("SWIPE_END - " + JSON.stringify(data));
-                this.extremityData_end = data.hands[0].extremityPoints;
-                this.calculateSwipeDirection("left", 1 /* EXTREMITY_LEFTMOST */);
-                this.calculateSwipeDirection("center", 5 /* EXTREMITY_CENTER */);
-                this.calculateSwipeDirection("rigth", 2 /* EXTREMITY_RIGHTMOST */);
+                // TODO: what if no hands ???  what if more hands ???
+                if (data.hands[0].bodySide == 2 /* BODY_SIDE_RIGHT */) {
+                    this.onSwipeRight2Left();
+                }
+                if (data.hands[0].bodySide == 1 /* BODY_SIDE_LEFT */) {
+                    this.onSwipeLeft2Right();
+                }
             }
         }
     };
-    RealSensePlugin.prototype.calculateSwipeDirection = function (name, index) {
-        var x = this.extremityData_start[index].pointWorld.x - this.extremityData_end[index].pointWorld.x;
-        var y = this.extremityData_start[index].pointWorld.y - this.extremityData_end[index].pointWorld.y;
-        var z = this.extremityData_start[index].pointWorld.z - this.extremityData_end[index].pointWorld.z;
-        console.log("swipe direction (" + name + "): { x:" + x + ", y:" + y + ", z:" + z);
+    RealSensePlugin.prototype.onSwipeRight2Left = function () {
+        console.log("SWIPE right -> left");
+    };
+    RealSensePlugin.prototype.onSwipeLeft2Right = function () {
+        console.log("SWIPE left -> right");
     };
     RealSensePlugin.prototype.start = function () {
         var _this = this;
