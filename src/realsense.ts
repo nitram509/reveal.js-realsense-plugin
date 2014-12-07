@@ -7,6 +7,9 @@ class RealSensePlugin {
   private handModule:PXCMHandModule;
   private handConfiguration:PXCMHandConfiguration;
 
+  private extremityData_start:ExtremityData[];
+  private extremityData_end:ExtremityData[];
+
   public checkPlatformCompatibility() {
     RealSenseInfo(['hand'], function (info) {
       if (info.IsReady == true) {
@@ -77,9 +80,28 @@ class RealSensePlugin {
     for (var a = 0; a < data.alerts.length; a++) {
       //$('#alerts_status').text('Alert: ' + JSON.stringify(data.alerts[a]));
     }
+
     for (var g = 0; g < data.gestures.length; g++) {
-      //$('#gestures_status').text('Gesture: ' + JSON.stringify(data.gestures[g]));
+      var gesture:GestureData = data.gestures[g];
+      if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_START) {
+        //console.log("SWIPE_START - " + JSON.stringify(data));
+        this.extremityData_start = data.hands[0].extremityPoints;
+      }
+      if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_END) {
+        //console.log("SWIPE_END - " + JSON.stringify(data));
+        this.extremityData_end = data.hands[0].extremityPoints;
+        this.calculateSwipeDirection("left", EXTREMITY_INDEX.EXTREMITY_LEFTMOST);
+        this.calculateSwipeDirection("center", EXTREMITY_INDEX.EXTREMITY_CENTER);
+        this.calculateSwipeDirection("rigth", EXTREMITY_INDEX.EXTREMITY_RIGHTMOST);
+      }
     }
+  }
+
+  private calculateSwipeDirection(name:string, index:number):void {
+    var x = this.extremityData_start[index].pointWorld.x - this.extremityData_end[index].pointWorld.x;
+    var y = this.extremityData_start[index].pointWorld.y - this.extremityData_end[index].pointWorld.y;
+    var z = this.extremityData_start[index].pointWorld.z - this.extremityData_end[index].pointWorld.z;
+    console.log("swipe direction (" + name + "): { x:" + x + ", y:" + y + ", z:" + z);
   }
 
   public start():void {
@@ -150,10 +172,10 @@ class RealSensePlugin {
   private clear() {
     //$('#alerts_status').text('');
     //$('#gestures_status').text('');
-    //document.getElementById("Start").disabled = false;
-    //var canvas = document.getElementById('myCanvas');
-    //var context = canvas.getContext('2d');
-    //context.clearRect(0, 0, canvas.width, canvas.height);
+    document.getElementById("Start").disabled = false;
+    var canvas = document.getElementById('myCanvas');
+    var context = canvas['getContext']('2d');
+    context.clearRect(0, 0, canvas['width'], canvas['height']);
   }
 
 }

@@ -1353,7 +1353,25 @@ var RealSensePlugin = (function () {
         for (var a = 0; a < data.alerts.length; a++) {
         }
         for (var g = 0; g < data.gestures.length; g++) {
+            var gesture = data.gestures[g];
+            if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
+                //console.log("SWIPE_START - " + JSON.stringify(data));
+                this.extremityData_start = data.hands[0].extremityPoints;
+            }
+            if (gesture.name == 'swipe' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                //console.log("SWIPE_END - " + JSON.stringify(data));
+                this.extremityData_end = data.hands[0].extremityPoints;
+                this.calculateSwipeDirection("left", 1 /* EXTREMITY_LEFTMOST */);
+                this.calculateSwipeDirection("center", 5 /* EXTREMITY_CENTER */);
+                this.calculateSwipeDirection("rigth", 2 /* EXTREMITY_RIGHTMOST */);
+            }
         }
+    };
+    RealSensePlugin.prototype.calculateSwipeDirection = function (name, index) {
+        var x = this.extremityData_start[index].pointWorld.x - this.extremityData_end[index].pointWorld.x;
+        var y = this.extremityData_start[index].pointWorld.y - this.extremityData_end[index].pointWorld.y;
+        var z = this.extremityData_start[index].pointWorld.z - this.extremityData_end[index].pointWorld.z;
+        console.log("swipe direction (" + name + "): { x:" + x + ", y:" + y + ", z:" + z);
     };
     RealSensePlugin.prototype.start = function () {
         var _this = this;
@@ -1418,10 +1436,10 @@ var RealSensePlugin = (function () {
     RealSensePlugin.prototype.clear = function () {
         //$('#alerts_status').text('');
         //$('#gestures_status').text('');
-        //document.getElementById("Start").disabled = false;
-        //var canvas = document.getElementById('myCanvas');
-        //var context = canvas.getContext('2d');
-        //context.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("Start").disabled = false;
+        var canvas = document.getElementById('myCanvas');
+        var context = canvas['getContext']('2d');
+        context.clearRect(0, 0, canvas['width'], canvas['height']);
     };
     return RealSensePlugin;
 })();

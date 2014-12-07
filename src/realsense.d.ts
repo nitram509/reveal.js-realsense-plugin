@@ -45,7 +45,7 @@ interface IHand {
   userId:string;
   timeStamp:any;
   isCalibrated:boolean;
-  bodySide:any;
+  bodySide:BodySideType;
   boundingBoxImage:PXCMRectI32;
   massCenterImage:PXCMPointF32;
   massCenterWorld:PXCMPoint3DF32;
@@ -54,8 +54,27 @@ interface IHand {
   fingerData:FingerData[];
   trackedJoint:JointData[];
   normalizedJoint:JointData[];
+
+  openness:number;
 }
 
+declare enum BodySideType {
+  BODY_SIDE_UNKNOWN = 0,
+  BODY_SIDE_LEFT = 1,
+  BODY_SIDE_RIGHT = 2
+}
+
+declare enum EXTREMITY_INDEX {
+  /**
+   @brief Indexes of an extremity of the tracked hand
+   */
+  EXTREMITY_CLOSEST = 0,
+  EXTREMITY_LEFTMOST = 1,
+  EXTREMITY_RIGHTMOST = 2,
+  EXTREMITY_TOPMOST = 3,
+  EXTREMITY_BOTTOMMOST = 4,
+  EXTREMITY_CENTER = 5
+}
 interface ExtremityData {
   pointWorld:PXCMPoint3DF32;
   pointImage:PXCMPoint3DF32;
@@ -85,9 +104,15 @@ interface AlertData {
 interface GestureData {
   timeStamp:any;
   handId:any;
-  state:any;
+  state:GestureState;
   frameNumber:number;
   name:any;
+}
+
+declare enum GestureState {
+  GESTURE_STATE_START = 0,
+  GESTURE_STATE_IN_PROGRESS = 1,
+  GESTURE_STATE_END = 2
 }
 
 interface PXCMPoint3DF32 {
