@@ -3,7 +3,7 @@
 // Definitions by: Martin W. Kirst <https://github.com/nitram509>
 // Definitions: https://github.com/borisyankov/DefinitelyTyped
 
-declare var pxcmConst : realsense.pxcmConst;
+declare var pxcmConst:realsense.pxcmConst;
 
 declare var RealSenseInfo:RealSenseInfo;
 declare var PXCMSenseManager_CreateInstance:PXCMSenseManager_CreateInstance;
@@ -27,10 +27,92 @@ interface PXCMSenseManager_CreateInstance {
 }
 
 interface PXCSenseManager {
-  EnableHand(onHandData:any):any;
+  EnableHand(onHandData:(mid:any, module:PXCMHandModule, data:HandTrackingData)=>void):any;
+  PauseHand(pause:boolean):any;
   Init(onConnect:any, onStatus:any):any;
   StreamFrames():any;
   QueryCaptureManager():any;
+}
+
+interface HandTrackingData {
+  hands:IHand[];
+  alerts:AlertData[];
+  gestures:GestureData[];
+}
+
+interface IHand {
+  uniqueId:any;
+  userId:string;
+  timeStamp:any;
+  isCalibrated:boolean;
+  bodySide:any;
+  boundingBoxImage:PXCMRectI32;
+  massCenterImage:PXCMPointF32;
+  massCenterWorld:PXCMPoint3DF32;
+  palmOrientation:PXCMPoint4DF32;
+  extremityPoints:ExtremityData[]
+  fingerData:FingerData[];
+  trackedJoint:JointData[];
+  normalizedJoint:JointData[];
+}
+
+interface ExtremityData {
+  pointWorld:PXCMPoint3DF32;
+  pointImage:PXCMPoint3DF32;
+}
+
+interface FingerData {
+  foldedness:number;
+  radius:number;
+}
+
+interface JointData {
+  confidence:number;
+  positionWorld:PXCMPoint3DF32;
+  positionImage:PXCMPoint3DF32;
+  localRotation:PXCMPoint4DF32;
+  globalRotation:PXCMPoint4DF32;
+  speed:any;
+}
+
+interface AlertData {
+  label:any;
+  handId:any;
+  timeStamp:any;
+  frameNumber:number;
+}
+
+interface GestureData {
+  timeStamp:any;
+  handId:any;
+  state:any;
+  frameNumber:number;
+  name:any;
+}
+
+interface PXCMPoint3DF32 {
+  x:number;
+  y:number;
+  z:number;
+}
+
+interface PXCMPoint4DF32 {
+  x:number;
+  y:number;
+  z:number;
+  w:number;
+}
+
+interface PXCMPointF32 {
+  x:number;
+  y:number;
+}
+
+interface PXCMRectI32 {
+  x:number;
+  y:number;
+  w:number;
+  h:number;
 }
 
 interface PXCMHandModule {
