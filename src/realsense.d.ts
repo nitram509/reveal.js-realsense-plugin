@@ -18,6 +18,9 @@ interface RealSenseInfoEvent {
 
 interface PXCMSenseManager_CreateInstance {
   ():PXCMSenseManager_CreateInstance;
+
+  // TODO: this should be reworked as promises
+
   then(callback:(result:PXCSenseManager) => void) : PXCMSenseManager_CreateInstance;
   then(callback:(result:PXCMHandModule) => void) : PXCMSenseManager_CreateInstance;
   then(callback:(result:PXCMHandConfiguration) => void) : PXCMSenseManager_CreateInstance;

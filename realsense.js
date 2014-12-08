@@ -1310,6 +1310,8 @@ function RealSenseInfo(components, callback) {
 /// <reference path="./realsense.d.ts" />
 var RealSensePlugin = (function () {
     function RealSensePlugin() {
+        this.alerts = false;
+        this.gestures = true;
     }
     RealSensePlugin.prototype.checkPlatformCompatibility = function () {
         RealSenseInfo(['hand'], function (info) {
@@ -1321,7 +1323,7 @@ var RealSensePlugin = (function () {
     };
     RealSensePlugin.prototype.start = function () {
         var _this = this;
-        document.getElementById("Start").disabled = true;
+        //document.getElementById("Start").disabled = true;
         PXCMSenseManager_CreateInstance().then(function (result) {
             _this.sense = result;
             return _this.sense.EnableHand(_this.onHandData.bind(_this));
@@ -1333,25 +1335,30 @@ var RealSensePlugin = (function () {
             return _this.handModule.CreateActiveConfiguration();
         }).then(function (result) {
             _this.handConfiguration = result;
-            if (document.getElementById("alerts")['checked'])
+            if (_this.alerts)
                 return _this.handConfiguration.EnableAllAlerts();
             else
                 return _this.handConfiguration.DisableAllAlerts();
         }).then(function (result) {
-            if (document.getElementById("gestures")['checked'])
+            if (_this.gestures)
                 return _this.handConfiguration.EnableGesture("tap", false);
             else
                 return _this.handConfiguration.DisableAllGestures();
         }).then(function (result) {
-            if (document.getElementById("gestures")['checked'])
+            if (_this.gestures)
                 return _this.handConfiguration.EnableGesture("swipe", false);
             else
                 return _this.handConfiguration.DisableAllGestures();
         }).then(function (result) {
-            if (document.getElementById("gestures")['checked'])
+            if (_this.gestures)
                 return _this.handConfiguration.EnableGesture("v_sign", false);
-            else
-                return _this.handConfiguration.DisableAllGestures();
+            //  else
+            //    return this.handConfiguration.DisableAllGestures();
+            //}).then((result:any) => {
+            //  if (this.gestures)
+            //    return this.handConfiguration.EnableGesture("thumb_down", false);
+            //  else
+            //    return this.handConfiguration.DisableAllGestures();
         }).then(function (result) {
             return _this.handConfiguration.ApplyChanges();
         }).then(function (result) {
@@ -1363,85 +1370,38 @@ var RealSensePlugin = (function () {
             return _this.sense.StreamFrames();
         }).then(function (result) {
             _this.status('Streaming ' + _this.imageSize.width + 'x' + _this.imageSize.height);
-            document.getElementById("Stop").disabled = false;
+            //document.getElementById("Stop").disabled = false;
         }).catch(function (error) {
             _this.status('Init failed: ' + JSON.stringify(error));
-            document.getElementById("Start").disabled = false;
+            //document.getElementById("Start").disabled = false;
         });
     };
     RealSensePlugin.prototype.onHandData = function (mid, module, data) {
-        var canvas = document.getElementById('myCanvas');
-        var context = canvas['getContext']('2d');
-        var radius = 5;
-        var scale = 1;
-        canvas['width'] = this.imageSize.width;
-        canvas['height'] = this.imageSize.height;
-        if (typeof data.hands === 'undefined')
-            return;
-        for (var h = 0; h < data.hands.length; h++) {
-            var joints = data.hands[h].trackedJoint;
-            if (joints.length > 0) {
-                var baseX = joints[0].positionImage.x;
-                var baseY = joints[0].positionImage.y;
-                var wristX = joints[0].positionImage.x;
-                var wristY = joints[0].positionImage.y;
-                for (var j = 0; j < joints.length; j++) {
-                    if (joints[j] == null || joints[j].confidence <= 0)
-                        continue;
-                    var x = joints[j].positionImage.x;
-                    var y = joints[j].positionImage.y;
-                    context.beginPath();
-                    context.arc(x * scale, y * scale, radius, 0, 2 * Math.PI);
-                    context.lineWidth = 2;
-                    context.strokeStyle = 'green';
-                    context.stroke();
-                    if (j == 2 || j == 6 || j == 10 || j == 14 || j == 18) {
-                        baseX = wristX;
-                        baseY = wristY;
+        if (data.gestures && data.gestures.length > 0) {
+            for (var g = 0; g < data.gestures.length; g++) {
+                var gesture = data.gestures[g];
+                if (gesture.name == 'tap' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                    this.onTap();
+                }
+                else if (gesture.name == 'v_sign' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                    this.onVSign();
+                }
+                else if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
+                }
+                else if (gesture.name == 'swipe' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                    // TODO: what if no hands ???  what if more hands ???
+                    if (data.hands[0].bodySide == 2 /* BODY_SIDE_RIGHT */) {
+                        this.onSwipeRight2Left();
                     }
-                    context.beginPath();
-                    context.moveTo(baseX * scale, baseY * scale);
-                    context.lineTo(x * scale, y * scale);
-                    context.stroke();
-                    baseX = x;
-                    baseY = y;
+                    if (data.hands[0].bodySide == 1 /* BODY_SIDE_LEFT */) {
+                        this.onSwipeLeft2Right();
+                    }
+                }
+                else {
+                    console.log("Gesture.name:" + gesture.name);
                 }
             }
         }
-        for (var a = 0; a < data.alerts.length; a++) {
-        }
-        for (var g = 0; g < data.gestures.length; g++) {
-            var gesture = data.gestures[g];
-            if (gesture.name == 'tap' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                this.onTap();
-            }
-            if (gesture.name == 'v_sign' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                this.onVSign();
-            }
-            if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
-            }
-            if (gesture.name == 'swipe' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                // TODO: what if no hands ???  what if more hands ???
-                if (data.hands[0].bodySide == 2 /* BODY_SIDE_RIGHT */) {
-                    this.onSwipeRight2Left();
-                }
-                if (data.hands[0].bodySide == 1 /* BODY_SIDE_LEFT */) {
-                    this.onSwipeLeft2Right();
-                }
-            }
-        }
-    };
-    RealSensePlugin.prototype.onSwipeRight2Left = function () {
-        console.log("SWIPE right -> left");
-    };
-    RealSensePlugin.prototype.onSwipeLeft2Right = function () {
-        console.log("SWIPE left -> right");
-    };
-    RealSensePlugin.prototype.onTap = function () {
-        console.log("tap");
-    };
-    RealSensePlugin.prototype.onVSign = function () {
-        console.log("vsign");
     };
     RealSensePlugin.prototype.stop = function () {
         var _this = this;
@@ -1467,9 +1427,33 @@ var RealSensePlugin = (function () {
         //$('#alerts_status').text('');
         //$('#gestures_status').text('');
         document.getElementById("Start").disabled = false;
-        var canvas = document.getElementById('myCanvas');
-        var context = canvas['getContext']('2d');
-        context.clearRect(0, 0, canvas['width'], canvas['height']);
+        //var canvas = document.getElementById('myCanvas');
+        //var context = canvas['getContext']('2d');
+        //context.clearRect(0, 0, canvas['width'], canvas['height']);
+    };
+    RealSensePlugin.prototype.onSwipeRight2Left = function () {
+        if (window['Reveal']) {
+            window['Reveal'].right();
+        }
+        console.log("SWIPE right -> left");
+    };
+    RealSensePlugin.prototype.onSwipeLeft2Right = function () {
+        if (window['Reveal']) {
+            window['Reveal'].left();
+        }
+        console.log("SWIPE left -> right");
+    };
+    RealSensePlugin.prototype.onTap = function () {
+        if (window['Reveal']) {
+            window['Reveal'].toggleOverview();
+        }
+        console.log("tap");
+    };
+    RealSensePlugin.prototype.onVSign = function () {
+        if (window['Reveal']) {
+            window['Reveal'].togglePause();
+        }
+        console.log("v_sign");
     };
     return RealSensePlugin;
 })();
