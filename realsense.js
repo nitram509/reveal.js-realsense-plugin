@@ -641,30 +641,38 @@ function PXCMHandConfiguration(instance) {
      @return Promise object
      */
     this.EnableAllGestures = function (continuousGesture) {
-        return RealSense.connection.call(instance, 'PXCMHandConfiguration_EnableAllGestures', { 'continuousGesture': continuousGesture });
-    }
+        return RealSense.connection.call(instance, 'PXCMHandConfiguration_EnableAllGestures', {'continuousGesture': continuousGesture});
+    };
+
+    /** Enable a single gesture
+     @param {String} gestureName
+     @param {Boolean} continuousGesture  Set to "true" to get an event at every frame, or "false" to get only start and end states of the gesture
+     @return Promise object
+     */
+    this.EnableGesture = function (gestureName, continuousGesture) {
+        return RealSense.connection.call(instance, 'PXCMHandConfiguration_EnableGesture', { 'gestureName': gestureName, 'continuousGesture': continuousGesture });
+    };
 
     /** Enable all alert messages.
      @return Promise object
      */
     this.EnableAllAlerts = function () {
         return RealSense.connection.call(instance, 'PXCMHandConfiguration_EnableAllAlerts');
-    }
+    };
 
     /** Disable all gestures
-     @param {Boolean} continuousGesture  Set to "true" to get an event at every frame, or "false" to get only start and end states of the gesture
      @return Promise object
      */
     this.DisableAllGestures = function () {
         return RealSense.connection.call(instance, 'PXCMHandConfiguration_DisableAllGestures');
-    }
+    };
 
     /** Disable all alert messages.
      @return Promise object
      */
     this.DisableAllAlerts = function () {
         return RealSense.connection.call(instance, 'PXCMHandConfiguration_DisableAllAlerts');
-    }
+    };
 
     /** Commit the configuration changes to the module
      This method must be called in order for any configuration changes to actually apply
@@ -1311,6 +1319,56 @@ var RealSensePlugin = (function () {
             }
         });
     };
+    RealSensePlugin.prototype.start = function () {
+        var _this = this;
+        document.getElementById("Start").disabled = true;
+        PXCMSenseManager_CreateInstance().then(function (result) {
+            _this.sense = result;
+            return _this.sense.EnableHand(_this.onHandData.bind(_this));
+        }).then(function (result) {
+            _this.handModule = result;
+            _this.status('Init started');
+            return _this.sense.Init(_this.onConnect, _this.onStatus);
+        }).then(function (result) {
+            return _this.handModule.CreateActiveConfiguration();
+        }).then(function (result) {
+            _this.handConfiguration = result;
+            if (document.getElementById("alerts")['checked'])
+                return _this.handConfiguration.EnableAllAlerts();
+            else
+                return _this.handConfiguration.DisableAllAlerts();
+        }).then(function (result) {
+            if (document.getElementById("gestures")['checked'])
+                return _this.handConfiguration.EnableGesture("tap", false);
+            else
+                return _this.handConfiguration.DisableAllGestures();
+        }).then(function (result) {
+            if (document.getElementById("gestures")['checked'])
+                return _this.handConfiguration.EnableGesture("swipe", false);
+            else
+                return _this.handConfiguration.DisableAllGestures();
+        }).then(function (result) {
+            if (document.getElementById("gestures")['checked'])
+                return _this.handConfiguration.EnableGesture("v_sign", false);
+            else
+                return _this.handConfiguration.DisableAllGestures();
+        }).then(function (result) {
+            return _this.handConfiguration.ApplyChanges();
+        }).then(function (result) {
+            return _this.sense.QueryCaptureManager();
+        }).then(function (capture) {
+            return capture.QueryImageSize(pxcmConst.PXCMCapture.STREAM_TYPE_DEPTH);
+        }).then(function (result) {
+            _this.imageSize = result.size;
+            return _this.sense.StreamFrames();
+        }).then(function (result) {
+            _this.status('Streaming ' + _this.imageSize.width + 'x' + _this.imageSize.height);
+            document.getElementById("Stop").disabled = false;
+        }).catch(function (error) {
+            _this.status('Init failed: ' + JSON.stringify(error));
+            document.getElementById("Start").disabled = false;
+        });
+    };
     RealSensePlugin.prototype.onHandData = function (mid, module, data) {
         var canvas = document.getElementById('myCanvas');
         var context = canvas['getContext']('2d');
@@ -1354,6 +1412,12 @@ var RealSensePlugin = (function () {
         }
         for (var g = 0; g < data.gestures.length; g++) {
             var gesture = data.gestures[g];
+            if (gesture.name == 'tap' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                this.onTap();
+            }
+            if (gesture.name == 'v_sign' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                this.onVSign();
+            }
             if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
             }
             if (gesture.name == 'swipe' && gesture.state == 2 /* GESTURE_STATE_END */) {
@@ -1373,45 +1437,11 @@ var RealSensePlugin = (function () {
     RealSensePlugin.prototype.onSwipeLeft2Right = function () {
         console.log("SWIPE left -> right");
     };
-    RealSensePlugin.prototype.start = function () {
-        var _this = this;
-        document.getElementById("Start").disabled = true;
-        PXCMSenseManager_CreateInstance().then(function (result) {
-            _this.sense = result;
-            return _this.sense.EnableHand(_this.onHandData.bind(_this));
-        }).then(function (result) {
-            _this.handModule = result;
-            _this.status('Init started');
-            return _this.sense.Init(_this.onConnect, _this.onStatus);
-        }).then(function (result) {
-            return _this.handModule.CreateActiveConfiguration();
-        }).then(function (result) {
-            _this.handConfiguration = result;
-            if (document.getElementById("alerts")['checked'])
-                return _this.handConfiguration.EnableAllAlerts();
-            else
-                return _this.handConfiguration.DisableAllAlerts();
-        }).then(function (result) {
-            if (document.getElementById("gestures")['checked'])
-                return _this.handConfiguration.EnableAllGestures(false);
-            else
-                return _this.handConfiguration.DisableAllGestures();
-        }).then(function (result) {
-            return _this.handConfiguration.ApplyChanges();
-        }).then(function (result) {
-            return _this.sense.QueryCaptureManager();
-        }).then(function (capture) {
-            return capture.QueryImageSize(pxcmConst.PXCMCapture.STREAM_TYPE_DEPTH);
-        }).then(function (result) {
-            _this.imageSize = result.size;
-            return _this.sense.StreamFrames();
-        }).then(function (result) {
-            _this.status('Streaming ' + _this.imageSize.width + 'x' + _this.imageSize.height);
-            document.getElementById("Stop").disabled = false;
-        }).catch(function (error) {
-            _this.status('Init failed: ' + JSON.stringify(error));
-            document.getElementById("Start").disabled = false;
-        });
+    RealSensePlugin.prototype.onTap = function () {
+        console.log("tap");
+    };
+    RealSensePlugin.prototype.onVSign = function () {
+        console.log("vsign");
     };
     RealSensePlugin.prototype.stop = function () {
         var _this = this;

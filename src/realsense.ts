@@ -29,6 +29,56 @@ class RealSensePlugin {
     });
   }
 
+  public start():void {
+    document.getElementById("Start").disabled = true;
+    PXCMSenseManager_CreateInstance().then((result) => {
+      this.sense = result;
+      return this.sense.EnableHand(this.onHandData.bind(this));
+    }).then((result:PXCMHandModule) => {
+      this.handModule = result;
+      this.status('Init started');
+      return this.sense.Init(this.onConnect, this.onStatus);
+    }).then((result:any) => {
+      return this.handModule.CreateActiveConfiguration();
+    }).then((result:PXCMHandConfiguration) => {
+      this.handConfiguration = result;
+      if (document.getElementById("alerts")['checked'])
+        return this.handConfiguration.EnableAllAlerts();
+      else
+        return this.handConfiguration.DisableAllAlerts();
+    }).then((result:any) => {
+      if (document.getElementById("gestures")['checked'])
+        return this.handConfiguration.EnableGesture("tap", false);
+      else
+        return this.handConfiguration.DisableAllGestures();
+    }).then((result:any) => {
+      if (document.getElementById("gestures")['checked'])
+        return this.handConfiguration.EnableGesture("swipe", false);
+      else
+        return this.handConfiguration.DisableAllGestures();
+    }).then((result:any) => {
+      if (document.getElementById("gestures")['checked'])
+        return this.handConfiguration.EnableGesture("v_sign", false);
+      else
+        return this.handConfiguration.DisableAllGestures();
+    }).then((result:any) => {
+      return this.handConfiguration.ApplyChanges();
+    }).then((result:any) => {
+      return this.sense.QueryCaptureManager();
+    }).then((capture:PXCMCaptureManager) => {
+      return capture.QueryImageSize(pxcmConst.PXCMCapture.STREAM_TYPE_DEPTH);
+    }).then((result:PXCMImageSize) => {
+      this.imageSize = result.size;
+      return this.sense.StreamFrames();
+    }).then((result) => {
+      this.status('Streaming ' + this.imageSize.width + 'x' + this.imageSize.height);
+      document.getElementById("Stop").disabled = false;
+    }).catch((error) => {
+      this.status('Init failed: ' + JSON.stringify(error));
+      document.getElementById("Start").disabled = false;
+    });
+  }
+
   private onHandData(mid:any, module:PXCMHandModule, data:HandTrackingData):void {
     var canvas = document.getElementById('myCanvas');
     var context = canvas['getContext']('2d');
@@ -80,6 +130,12 @@ class RealSensePlugin {
 
     for (var g = 0; g < data.gestures.length; g++) {
       var gesture:GestureData = data.gestures[g];
+      if (gesture.name == 'tap' && gesture.state == GestureState.GESTURE_STATE_END) {
+        this.onTap();
+      }
+      if (gesture.name == 'v_sign' && gesture.state == GestureState.GESTURE_STATE_END) {
+        this.onVSign();
+      }
       if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_START) {
         // TODO: does this state need to be tracked ?
       }
@@ -103,44 +159,12 @@ class RealSensePlugin {
     console.log("SWIPE left -> right");
   }
 
-  public start():void {
-    document.getElementById("Start").disabled = true;
-    PXCMSenseManager_CreateInstance().then((result) => {
-      this.sense = result;
-      return this.sense.EnableHand(this.onHandData.bind(this));
-    }).then((result:PXCMHandModule) => {
-      this.handModule = result;
-      this.status('Init started');
-      return this.sense.Init(this.onConnect, this.onStatus);
-    }).then((result:any) => {
-      return this.handModule.CreateActiveConfiguration();
-    }).then((result:PXCMHandConfiguration) => {
-      this.handConfiguration = result;
-      if (document.getElementById("alerts")['checked'])
-        return this.handConfiguration.EnableAllAlerts();
-      else
-        return this.handConfiguration.DisableAllAlerts();
-    }).then((result:any) => {
-      if (document.getElementById("gestures")['checked'])
-        return this.handConfiguration.EnableAllGestures(false);
-      else
-        return this.handConfiguration.DisableAllGestures();
-    }).then((result:any) => {
-      return this.handConfiguration.ApplyChanges();
-    }).then((result:any) => {
-      return this.sense.QueryCaptureManager();
-    }).then((capture:PXCMCaptureManager) => {
-      return capture.QueryImageSize(pxcmConst.PXCMCapture.STREAM_TYPE_DEPTH);
-    }).then((result:PXCMImageSize) => {
-      this.imageSize = result.size;
-      return this.sense.StreamFrames();
-    }).then((result) => {
-      this.status('Streaming ' + this.imageSize.width + 'x' + this.imageSize.height);
-      document.getElementById("Stop").disabled = false;
-    }).catch((error) => {
-      this.status('Init failed: ' + JSON.stringify(error));
-      document.getElementById("Start").disabled = false;
-    });
+  private onTap() {
+    console.log("tap");
+  }
+
+  private onVSign() {
+    console.log("vsign");
   }
 
   public stop() {

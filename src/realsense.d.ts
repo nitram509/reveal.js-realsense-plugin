@@ -148,29 +148,10 @@ interface PXCMHandConfiguration {
   ApplyChanges():void;
   EnableAllGestures(enabled:boolean):void;
   DisableAllGestures():void;
-  DisableAlert:any;
-  DisableAllAlerts():void;
-  Disable:any;
-  EnableAlert(enabled:boolean):void;
   EnableAllAlerts():void;
-  Enable:any;
-  IsAlertEnabled:any;
-  SubscribeAlert:any;
-  UnsubscribeAlert:any;
+  DisableAllAlerts():void;
 
-  /** Set the user name to save hand calibration. */ SetUserName : any;
-  /** Get the user name. */ GetUserName : any;
-  /** Enable joint speed calculation. */ EnableJointSpeed : any;
-  /** Disable joint speed calculation. */ DisableJointSpeed : any;
-  /** Set the tracking bounds. */ SetTrackingBounds : any;
-  /** Get the tracking bounds. */ GetTrackingBounds : any;
-  /** Set the tracking mode. */ SetTrackingMode : any;
-  /** Get the tracking mode. */ GetTrackingMode : any;
-  /** Set the motion smoothing value. */ SetSmoothingValue : any;
-  /** Get the motion smoothing value. */ GetSmoothingValue : any;
-  /** Enable/disable the calculation of normalized joints */ EnableNormalizedJoin : any;
-  /** Check if the normalized joints are calculated. */ IsNormalizedJointsEnabled : boolean;
-  /** Enable/disable the calculation of the hand segmentation image */ EnableSegmentationImage:any;
+  EnableGesture(gestureName:string, continuousGesture:boolean):void;  // HACK !!! patched realsense-3.0 by me ;-)
 }
 
 interface PXCMCaptureManager {
