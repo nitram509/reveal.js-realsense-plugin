@@ -142,7 +142,7 @@ var pxcmConst = {
         ACCESS_ORDER_NEAR_TO_FAR: 2,	/// From near to far hand in scene
         ACCESS_ORDER_LEFT_HANDS: 3,		/// All left hands
         ACCESS_ORDER_RIGHT_HANDS: 4,	/// All right hands
-        ACCESS_ORDER_FIXED: 5,			/// The index of each hand is fixed as long as it is detected (and between 0 and 1)
+        ACCESS_ORDER_FIXED: 5			/// The index of each hand is fixed as long as it is detected (and between 0 and 1)
     },
 
     PXCMFaceData: {
@@ -213,7 +213,7 @@ var pxcmConst = {
             EXPRESSION_EYES_TURN_LEFT: 15,
             EXPRESSION_EYES_TURN_RIGHT: 16,
             EXPRESSION_EYES_UP: 17,
-            EXPRESSION_EYES_DOWN: 18,
+            EXPRESSION_EYES_DOWN: 18
         },
 
         AlertData: {
@@ -222,15 +222,15 @@ var pxcmConst = {
             ALERT_FACE_BACK_TO_FOV: 3,			//  a tracked face is back fully to field of view. 
             ALERT_FACE_OCCLUDED: 4,			    //  face is occluded by any object or hand (even slightly).
             ALERT_FACE_NO_LONGER_OCCLUDED: 5,   //  face is not occluded by any object or hand.
-            ALERT_FACE_LOST: 6,					//  a face could not be detected for too long, will be ignored.
+            ALERT_FACE_LOST: 6					//  a face could not be detected for too long, will be ignored.
         },
 
-        ALERT_NAME_SIZE: 30,
+        ALERT_NAME_SIZE: 30
     },
 
     PXCMSenseManager: {
         CUID: -661306591,
-        TIMEOUT_INFINITE: -1,
+        TIMEOUT_INFINITE: -1
     },
 
     PXCMCapture: {
@@ -295,8 +295,8 @@ var pxcmConst = {
              Describes the steam options.
              */
             STREAM_OPTION_ANY: 0,
-            STREAM_OPTION_DEPTH_PRECALCULATE_UVMAP: 0x0001,
-        },
+            STREAM_OPTION_DEPTH_PRECALCULATE_UVMAP: 0x0001
+        }
     },
 
     PXCMFaceConfiguration: {
@@ -315,11 +315,11 @@ var pxcmConst = {
         RecognitionConfiguration: {
             REGISTRATION_MODE_CONTINUOUS: 0,	//registers users automatically
             REGISTRATION_MODE_ON_DEMAND: 1,	//registers users on demand only
-            STORAGE_NAME_SIZE: 50,
+            STORAGE_NAME_SIZE: 50
         },
 
         FACE_MODE_COLOR: 0,
-        FACE_MODE_COLOR_PLUS_DEPTH: 1,
+        FACE_MODE_COLOR_PLUS_DEPTH: 1
     },
 
     PXCMSession: {
@@ -354,7 +354,7 @@ var pxcmConst = {
         IMPL_SUBGROUP_AUDIO_CAPTURE         : 0x00000001,    /* audio capture subgroup */
         IMPL_SUBGROUP_VIDEO_CAPTURE         : 0x00000002,    /* video capture subgroup */
         IMPL_SUBGROUP_SPEECH_RECOGNITION    : 0x00000001,    /* speech recognition subgroup */
-        IMPL_SUBGROUP_SPEECH_SYNTHESIS      : 0x00000002,    /* speech synthesis subgroup */
+        IMPL_SUBGROUP_SPEECH_SYNTHESIS      : 0x00000002    /* speech synthesis subgroup */
     },
 
     PXCMSpeechRecognition: {
@@ -405,7 +405,7 @@ var pxcmConst = {
          Enumerate all supported vocabulary file types.
          */
         VFT_NONE : 0,  /**  unspecified type, use filename extension */
-        VFT_LIST : 1,  /**  text file*/
+        VFT_LIST : 1  /**  text file*/
     },
 
     /**
@@ -464,7 +464,6 @@ PXCMSession_CreateInstance = function () {
 };
 
 function PXCMBase(instance) {
-    var instance = instance;
     //var prefix = name.concat('_');
     var self = this;
 
@@ -483,7 +482,6 @@ function PXCMBase(instance) {
  Control the pipeline execution with this interface.
  */
 function PXCMSenseManager(instance) {
-    var instance = instance;
     var self = this;
     this.mid_callbacks = {};
 
@@ -493,7 +491,7 @@ function PXCMSenseManager(instance) {
      */
     this.EnableHand = function (onData) {
         return this.EnableModule(pxcmConst.PXCMHandModule.CUID, 0, onData);
-    }
+    };
 
     /** Enable the face module in the SenseManager pipeline.
      @param {function} onData    Callback function to receive per-frame recognition results
@@ -501,7 +499,7 @@ function PXCMSenseManager(instance) {
      */
     this.EnableFace = function (onData) {
         return this.EnableModule(pxcmConst.PXCMFaceModule.CUID, 0, onData);
-    }
+    };
 
     /** Query the PXCMCaptureManager object for changing capture configuration
      @return Promise object with PXCMCaptureManager object in success callback
@@ -510,11 +508,12 @@ function PXCMSenseManager(instance) {
         return RealSense.connection.call(instance, 'PXCMSenseManager_QueryCaptureManager').then(function (result) {
             return new PXCMCaptureManager(result.instance.value);
         });
-    }
+    };
 
     /** Initialize the SenseManager pipeline for streaming with callbacks. The application must
      enable raw streams or algorithm modules before this function.
      @param {function} onConnect     Optional callback when there is a device connection or disconnection
+     @param {function} onStatus      Optional callback
      @return Promise object
      */
     this.Init = function (onConnect, onStatus) {
@@ -524,8 +523,14 @@ function PXCMSenseManager(instance) {
         if (onStatus !== 'undefined' && onStatus != null) {
             RealSense.connection.subscribe_callback("PXCMSenseManager_OnStatus", this, onStatus);
         }
-        return RealSense.connection.call(instance, 'PXCMSenseManager_Init', { 'handler': true, 'onModuleProcessedFrame': true, 'onConnect': onConnect !== 'undefined' && onConnect != null, 'onStatus': onStatus !== 'undefined' && onStatus != null, 'attachDataToCallbacks': true /*, 'onImageSamples': true, 'addRefImages': true*/ }, 20000); // Connection to camera may take long time
-    }
+        return RealSense.connection.call(instance, 'PXCMSenseManager_Init', {
+            'handler': true,
+            'onModuleProcessedFrame': true,
+            'onConnect': onConnect !== 'undefined' && onConnect != null,
+            'onStatus': onStatus !== 'undefined' && onStatus != null,
+            'attachDataToCallbacks': true /*, 'onImageSamples': true, 'addRefImages': true*/
+        }, 20000); // Connection to camera may take long time
+    };
 
     /** Start streaming with reporting per-frame recognition results to callbacks specified in Enable* functions.
      The application must initialize the pipeline before calling this function.
@@ -541,7 +546,7 @@ function PXCMSenseManager(instance) {
      */
     this.PauseHand = function (pause) {
         return this.PauseModule(pxcmConst.PXCMHandModule.CUID, pause);
-    }
+    };
 
     /** Pause/Resume the execution of the face module.
      @param {Boolean} pause        If true, pause the module. Otherwise, resume the module.
@@ -549,14 +554,14 @@ function PXCMSenseManager(instance) {
      */
     this.PauseFace = function (pause) {
         return this.PauseModule(pxcmConst.PXCMFaceModule.CUID, pause);
-    }
+    };
 
     /** Close the execution pipeline.
      @return Promise object
      */
     this.Close = function () {
         return RealSense.connection.call(instance, 'PXCMSenseManager_Close');
-    }
+    };
 
     ///////////////////////////////////////////////////////////////
     // Internal functions
@@ -573,21 +578,21 @@ function PXCMSenseManager(instance) {
             var module = null;
             if (mid == pxcmConst.PXCMFaceModule.CUID) module = new PXCMFaceModule(result2.instance.value); else
             if (mid == pxcmConst.PXCMHandModule.CUID) module = new PXCMHandModule(result2.instance.value); else
-                module = new PXCMBase(result2.instance.value);;
+                module = new PXCMBase(result2.instance.value);
             self.mid_callbacks[mid].module_instance = result2.instance.value;
             self.mid_callbacks[mid].module = module;
             return module;
         });
-    }
+    };
 
     this.PauseModule = function (mid, pause) {
         return RealSense.connection.call(instance, 'PXCMSenseManager_PauseModule', { 'mid': mid, 'pause': pause });
-    }
+    };
 
     this.EnableStreams = function (sdesc, onData) {
         this.mid_callbacks[mid] = { callback: onData };
         return RealSense.connection.call(instance, 'PXCMSenseManager_EnableStreams', { 'sdesc': sdesc });
-    }
+    };
 
     this.OnModuleProcessedFrame = function (response, self) {
         if (self.mid_callbacks[response.mid]) {
@@ -604,7 +609,6 @@ function PXCMSenseManager(instance) {
 }
 
 function PXCMCaptureManager(instance) {
-    var instance = instance;
     var self = this;
 
     /**
@@ -618,7 +622,6 @@ function PXCMCaptureManager(instance) {
 }
 
 function PXCMHandModule(instance) {
-    var instance = instance;
     var self = this;
 
     /**
@@ -633,7 +636,6 @@ function PXCMHandModule(instance) {
 }
 
 function PXCMHandConfiguration(instance) {
-    var instance = instance;
     var self = this;
 
     /** Enable all gestures
@@ -684,7 +686,6 @@ function PXCMHandConfiguration(instance) {
 }
 
 function PXCMFaceModule(instance) {
-    var instance = instance;
     var self = this;
 
     /**
@@ -704,7 +705,6 @@ function PXCMFaceModule(instance) {
 }
 
 function PXCMFaceConfiguration(instance) {
-    var instance = instance;
     var self = this;
     var configs; // current configuration
 
@@ -713,20 +713,19 @@ function PXCMFaceConfiguration(instance) {
      @return Promise object
      */
     this.SetTrackingMode = function (trackingMode) {
-        return RealSense.connection.call(instance, 'PXCMFaceConfiguration_SetTrackingMode', { 'trackingMode': trackingMode });
-    }
+        return RealSense.connection.call(instance, 'PXCMFaceConfiguration_SetTrackingMode', {'trackingMode': trackingMode});
+    };
 
     /** Commit the configuration changes to the module
      This method must be called in order for any configuration changes to actually apply
      @return Promise object
      */
     this.ApplyChanges = function () {
-        return RealSense.connection.call(instance, 'PXCMFaceConfiguration_ApplyChanges', { 'configs': this.configs });
-    }
+        return RealSense.connection.call(instance, 'PXCMFaceConfiguration_ApplyChanges', {'configs': this.configs});
+    };
 }
 
 function PXCMSession(instance) {
-    var instance = instance;
     var self = this;
 
     /**
@@ -735,7 +734,7 @@ function PXCMSession(instance) {
      */
     this.QueryVersion = function () {
         return RealSense.connection.call(instance, 'PXCMSession_QueryVersion');
-    }
+    };
 
     /**
      @brief Search a module implementation.
@@ -745,7 +744,7 @@ function PXCMSession(instance) {
      */
     this.QueryImpl = function (templat, idx) {
         return RealSense.connection.call(instance, 'PXCMSession_QueryImpl', { templat: templat, idx: idx });
-    }
+    };
 
     /**
      @brief Create an instance of the specified module.
@@ -769,7 +768,7 @@ function PXCMSession(instance) {
             if (object == null) object = new PXCMBase(result.instance.value);
             return object;
         })
-    }
+    };
 
     /**
      @brief Return the module descriptor
@@ -782,7 +781,6 @@ function PXCMSession(instance) {
 }
 
 function PXCMSpeechRecognition(instance) {
-    var instance = instance;
     var self = this;
 
     /**
@@ -791,7 +789,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.QuerySupportedProfiles = function (idx) {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_QuerySupportedProfiles');
-    }
+    };
 
     /**
      @brief The function returns the working algorithm configurations.
@@ -799,7 +797,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.QueryProfile = function () {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_QueryProfile', { 'idx': -1 });
-    }
+    };
 
     /**
      @brief The function sets the working algorithm configurations.
@@ -808,7 +806,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.SetProfile = function (config) {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_SetProfile', { 'config': config });
-    }
+    };
 
     /**
      @brief The function builds the recognition grammar from the list of strings.
@@ -819,7 +817,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.BuildGrammarFromStringList = function (gid, cmds, labels) {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_BuildGrammarFromStringList', { 'gid': gid, 'cmds': cmds, 'labels': labels });
-    }
+    };
 
     /**
      @brief The function deletes the specified grammar and releases any resources allocated.
@@ -828,7 +826,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.ReleaseGrammar = function (gid) {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_ReleaseGrammar', { 'gid': gid });
-    }
+    };
 
     /**
      @brief The function sets the active grammar for recognition.
@@ -837,7 +835,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.SetGrammar = function (gid) {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_SetGrammar', { 'gid': gid }, 30000); // Loading language model may take long time
-    }
+    };
 
     /**
      @brief The function sets the dictation recognition mode.
@@ -846,7 +844,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.SetDictation = function () {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_SetGrammar', { 'gid': 0 }, 30000); // Loading language model may take long time
-    }
+    };
 
     /**
      @brief The function starts voice recognition.
@@ -858,7 +856,7 @@ function PXCMSpeechRecognition(instance) {
         RealSense.connection.subscribe_callback("PXCMSpeechRecognition_OnRecognition", this, OnRecognition);
         RealSense.connection.subscribe_callback("PXCMSpeechRecognition_OnAlert", this, OnAlert);
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_StartRec', { 'handler': true, 'onRecognition': true, 'onAlert': true }, 20000); // Loading language model may take several seconds
-    }
+    };
 
     /**
      @brief The function stops voice recognition immediately.
@@ -866,7 +864,7 @@ function PXCMSpeechRecognition(instance) {
      */
     this.StopRec = function () {
         return RealSense.connection.call(instance, 'PXCMSpeechRecognition_StopRec', { });
-    }
+    };
 }
 
 // layout of object received in face callback (callback specified in EnableFaceModule)
@@ -880,7 +878,7 @@ var FaceDataLayout = {
                 x: Number,
                 y: Number,
                 w: Number,
-                h: Number,
+                h: Number
             }
         },
         landmarks: {
@@ -891,11 +889,11 @@ var FaceDataLayout = {
                 world: {
                     x: Number,
                     y: Number,
-                    z: Number,
+                    z: Number
                 },
                 image: {
                     x: Number,
-                    y: Number,
+                    y: Number
                 }
             }]
         },
@@ -903,18 +901,18 @@ var FaceDataLayout = {
             headPosition: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             poseEulerAngles: {
                 yaw: Number,
                 pitch: Number,
-                roll: Number,
+                roll: Number
             },
             poseQuaternion: {
                 x: Number,
                 y: Number,
                 z: Number,
-                w: Number,
+                w: Number
             }
         },
         expressions: {
@@ -935,15 +933,15 @@ var FaceDataLayout = {
             eyesTurnLeft: Number,
             eyesTurnRight: Number,
             eyesUp: Number,
-            eyesDown: Number,
+            eyesDown: Number
         }
     }],
     alerts: [{
         name: String,
         timeStamp: Number,
-        faceId: Number,
+        faceId: Number
     }]
-}
+};
 
 // layout of object received in hand callback (callback specified in EnableHandModule)
 var HandDataLayout = {
@@ -958,67 +956,67 @@ var HandDataLayout = {
             x: Number,
             y: Number,
             w: Number,
-            h: Number,
+            h: Number
         },
         massCenterImage: {
             x: Number,
-            y: Number,
+            y: Number
         },
         massCenterWorld: {
             x: Number,
             y: Number,
-            z: Number,
+            z: Number
         },
         palmOrientation: {
             x: Number,
             y: Number,
             z: Number,
-            w: Number,
+            w: Number
         },
         extremityPoints: [{
             pointWorld: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             pointImage: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             }
         }],
         fingerData: [{
             foldedness: Number,
-            radius: Number,
+            radius: Number
         }],
         trackedJoint: [{
             confidence: Number,
             positionWorld: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             positionImage: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             localRotation: {
                 x: Number,
                 y: Number,
                 z: Number,
-                w: Number,
+                w: Number
             },
             globalOrientation: {
                 x: Number,
                 y: Number,
                 z: Number,
-                w: Number,
+                w: Number
             },
             speed: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             }
         }],
         normalizedJoint: [{
@@ -1026,46 +1024,46 @@ var HandDataLayout = {
             positionWorld: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             positionImage: {
                 x: Number,
                 y: Number,
-                z: Number,
+                z: Number
             },
             localRotation: {
                 x: Number,
                 y: Number,
                 z: Number,
-                w: Number,
+                w: Number
             },
             globalOrientation: {
                 x: Number,
                 y: Number,
                 z: Number,
-                w: Number,
+                w: Number
             },
             speed: {
                 x: Number,
                 y: Number,
-                z: Number,
-            },
-        }],
+                z: Number
+            }
+        }]
     }],
     alerts: [{
         label: Number,
         handId: Number,
         timeStamp: Number,
-        frameNumber: Number,
+        frameNumber: Number
     }],
     gestures: [{
         timeStamp: Number,
         handId: Number,
         state: Number,
         frameNumber: Number,
-        name: String,
+        name: String
     }]
-}
+};
 
 //////////////////////////////////////////////////////////////////////////////////
 // Internal object for websocket communication
@@ -1131,7 +1129,7 @@ function RealSenseConnection() {
             } else {
                 this.reject({ 'error': 'request timeout on method ' + request.method });
             }
-        }
+        };
         if (this.websocket.readyState > 1) {
             request.reject({ 'error': 'error opening websocket' });
         } else {
@@ -1151,7 +1149,7 @@ function RealSenseConnection() {
             self.websocket.send(self.queue[i]);
         }
         self.queue = [];
-    }
+    };
 
     // Message handler
     this._onmessage = function (event) {
@@ -1206,7 +1204,7 @@ function RealSenseConnection() {
     // Subscribe to callback from server
     this.subscribe_callback = function (method, obj_ptr, callback) {
         this.callbacks[method] = { obj: obj_ptr, callback: callback };
-    }
+    };
 }
 
 // *************************************************************************** //
@@ -1263,7 +1261,7 @@ function RealSenseInfo(components, callback) {
         }
 
         return 0;
-    }
+    };
 
     try {
         var xhr = new XMLHttpRequest();
@@ -1276,7 +1274,7 @@ function RealSenseInfo(components, callback) {
                 info.responseText = xhr.responseText;
                 info.IsBrowserSupported = "WebSocket" in window;
                 info.IsPlatformSupported = 'DCM' in info;
-                info.Updates = new Array();
+                info.Updates = [];
                 if (info.IsPlatformSupported) {
                     var update = false;
                     //if (versionCompare(DCM_VERSION, info.DCM_version) > 0) info.Updates.push({ 'url': DCM_URL, 'name': DCM_NAME, 'href' : '<l href="' + DCM_URL + '">' + DCM_NAME + '</l>' });
@@ -1286,21 +1284,25 @@ function RealSenseInfo(components, callback) {
                             if (!(components[i] in info)) update = true;
                         }
                     }
-                    if (update) info.Updates.push({ 'url': RUNTIME_URL, 'name': RUNTIME_NAME, 'href': '<l href="' + RUNTIME_URL + '">' + RUNTIME_NAME + '</l>' });
+                    if (update) info.Updates.push({
+                        'url': RUNTIME_URL,
+                        'name': RUNTIME_NAME,
+                        'href': '<l href="' + RUNTIME_URL + '">' + RUNTIME_NAME + '</l>'
+                    });
                 }
                 info.IsReady = info.IsPlatformSupported && info.IsBrowserSupported && info.Updates.length == 0;
                 callback(info);
             }
-        }
+        };
         xhr.ontimeout = function () {
-            var info = new Object();
+            var info = {};
             info.responseText = 'Cannot get info from server';
             info.IsPlatformSupported = false;
             info.IsBrowserSupported = "WebSocket" in window;
-            info.Updates = new Array();
+            info.Updates = [];
             info.IsReady = false;
             callback(info);
-        }
+        };
         xhr.send(null);
     } catch (exception) {
     }
