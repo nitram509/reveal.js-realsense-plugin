@@ -1,5 +1,23 @@
 /// <reference path="./realsense.d.ts" />
 
+class Throttler {
+  private minDelay:number;
+  private lastCall:number;
+
+  constructor(minDelay:number) {
+    this.minDelay = minDelay;
+    this.lastCall = Date.now() - minDelay - 1;
+  }
+
+  public schedule(callee:()=>void) {
+    var dateNow = Date.now();
+    if ((dateNow - this.minDelay) > this.lastCall) {
+      this.lastCall = dateNow;
+      callee.apply(callee);
+    }
+  }
+}
+
 class RealSensePlugin {
 
   private sense:any;
@@ -7,8 +25,11 @@ class RealSensePlugin {
   private handModule:PXCMHandModule;
   private handConfiguration:PXCMHandConfiguration;
 
-  private alerts : boolean = false;
-  private gestures : boolean = true;
+  private alerts:boolean = false;
+  private gestures:boolean = true;
+
+  private pauseThrottler = new Throttler(1000);
+  private overviewThrottler = new Throttler(1000);
 
   public checkPlatformCompatibility() {
     RealSenseInfo(['hand'], function (info) {
@@ -50,13 +71,13 @@ class RealSensePlugin {
     }).then((result:any) => {
       if (this.gestures)
         return this.handConfiguration.EnableGesture("v_sign", false);
-    //  else
-    //    return this.handConfiguration.DisableAllGestures();
-    //}).then((result:any) => {
-    //  if (this.gestures)
-    //    return this.handConfiguration.EnableGesture("thumb_down", false);
-    //  else
-    //    return this.handConfiguration.DisableAllGestures();
+      //  else
+      //    return this.handConfiguration.DisableAllGestures();
+      //}).then((result:any) => {
+      //  if (this.gestures)
+      //    return this.handConfiguration.EnableGesture("thumb_down", false);
+      //  else
+      //    return this.handConfiguration.DisableAllGestures();
     }).then((result:any) => {
       return this.handConfiguration.ApplyChanges();
     }).then((result:any) => {
@@ -79,10 +100,14 @@ class RealSensePlugin {
     if (data.gestures && data.gestures.length > 0) {
       for (var g = 0; g < data.gestures.length; g++) {
         var gesture:GestureData = data.gestures[g];
-        if (gesture.name == 'tap' && gesture.state == GestureState.GESTURE_STATE_END) {
-          this.onTap();
+        if (gesture.name == 'tap' && gesture.state == GestureState.GESTURE_STATE_START) {
+          // TODO: does this state need to be tracked ?
+        } else if (gesture.name == 'tap' && gesture.state == GestureState.GESTURE_STATE_END) {
+          this.overviewThrottler.schedule(this.onTap);
+        } else if (gesture.name == 'v_sign' && gesture.state == GestureState.GESTURE_STATE_START) {
+          // TODO: does this state need to be tracked ?
         } else if (gesture.name == 'v_sign' && gesture.state == GestureState.GESTURE_STATE_END) {
-          this.onVSign();
+          this.pauseThrottler.schedule(this.onVSign);
         } else if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_START) {
           // TODO: does this state need to be tracked ?
         } else if (gesture.name == 'swipe' && gesture.state == GestureState.GESTURE_STATE_END) {
@@ -126,12 +151,7 @@ class RealSensePlugin {
   }
 
   private clear() {
-    //$('#alerts_status').text('');
-    //$('#gestures_status').text('');
     document.getElementById("Start").disabled = false;
-    //var canvas = document.getElementById('myCanvas');
-    //var context = canvas['getContext']('2d');
-    //context.clearRect(0, 0, canvas['width'], canvas['height']);
   }
 
   private onSwipeRight2Left() {
@@ -163,3 +183,7 @@ class RealSensePlugin {
   }
 
 }
+
+var realSensePlugin = new RealSensePlugin();
+realSensePlugin.checkPlatformCompatibility();
+realSensePlugin.start();

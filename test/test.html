@@ -60,13 +60,11 @@
 </div>
 
 <script type="text/javascript">
-  var rsp = new RealSensePlugin();
-  rsp.checkPlatformCompatibility();
   $('#Start').click(function () {
-    rsp.start();
+    realSensePlugin.start();
   });
   $('#Stop').click(function () {
-    rsp.stop();
+    realSensePlugin.stop();
   });
 </script>
 

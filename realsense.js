@@ -1310,10 +1310,26 @@ function RealSenseInfo(components, callback) {
 
 // *************************************************************************** //
 /// <reference path="./realsense.d.ts" />
+var Throttler = (function () {
+    function Throttler(minDelay) {
+        this.minDelay = minDelay;
+        this.lastCall = Date.now() - minDelay - 1;
+    }
+    Throttler.prototype.schedule = function (callee) {
+        var dateNow = Date.now();
+        if ((dateNow - this.minDelay) > this.lastCall) {
+            this.lastCall = dateNow;
+            callee.apply(callee);
+        }
+    };
+    return Throttler;
+})();
 var RealSensePlugin = (function () {
     function RealSensePlugin() {
         this.alerts = false;
         this.gestures = true;
+        this.pauseThrottler = new Throttler(1000);
+        this.overviewThrottler = new Throttler(1000);
     }
     RealSensePlugin.prototype.checkPlatformCompatibility = function () {
         RealSenseInfo(['hand'], function (info) {
@@ -1382,11 +1398,15 @@ var RealSensePlugin = (function () {
         if (data.gestures && data.gestures.length > 0) {
             for (var g = 0; g < data.gestures.length; g++) {
                 var gesture = data.gestures[g];
-                if (gesture.name == 'tap' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                    this.onTap();
+                if (gesture.name == 'tap' && gesture.state == 0 /* GESTURE_STATE_START */) {
+                }
+                else if (gesture.name == 'tap' && gesture.state == 2 /* GESTURE_STATE_END */) {
+                    this.overviewThrottler.schedule(this.onTap);
+                }
+                else if (gesture.name == 'v_sign' && gesture.state == 0 /* GESTURE_STATE_START */) {
                 }
                 else if (gesture.name == 'v_sign' && gesture.state == 2 /* GESTURE_STATE_END */) {
-                    this.onVSign();
+                    this.pauseThrottler.schedule(this.onVSign);
                 }
                 else if (gesture.name == 'swipe' && gesture.state == 0 /* GESTURE_STATE_START */) {
                 }
@@ -1426,12 +1446,7 @@ var RealSensePlugin = (function () {
         }
     };
     RealSensePlugin.prototype.clear = function () {
-        //$('#alerts_status').text('');
-        //$('#gestures_status').text('');
         document.getElementById("Start").disabled = false;
-        //var canvas = document.getElementById('myCanvas');
-        //var context = canvas['getContext']('2d');
-        //context.clearRect(0, 0, canvas['width'], canvas['height']);
     };
     RealSensePlugin.prototype.onSwipeRight2Left = function () {
         if (window['Reveal']) {
@@ -1459,3 +1474,6 @@ var RealSensePlugin = (function () {
     };
     return RealSensePlugin;
 })();
+var realSensePlugin = new RealSensePlugin();
+realSensePlugin.checkPlatformCompatibility();
+realSensePlugin.start();
