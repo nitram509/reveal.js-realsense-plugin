@@ -32,9 +32,9 @@ module.exports = function (grunt) {
         src: 'build/generated/realsense.js',
         dest: 'build/realsense.min.js'
       },
-      "test-env": {
+      "test-demo-app": {
         src: 'realsense.js',
-        dest: '../reveal.js-testenv/plugin/realsense/realsense.js'
+        dest: '../reveal.js-demo-app/plugin/realsense/realsense.js'
       }
     },
 
@@ -68,7 +68,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-typescript');
 
 
-  grunt.registerTask('default', ['typescript', 'uglify', 'concat', 'copy:test-env']);
-  grunt.registerTask('development', ['typescript', 'copy:build', 'concat', 'copy:test-env']);
+  grunt.registerTask('default', ['typescript', 'uglify', 'concat', 'copy:test-demo-app']);
+  grunt.registerTask('development', ['typescript', 'copy:build', 'concat', 'copy:test-demo-app']);
 
 };

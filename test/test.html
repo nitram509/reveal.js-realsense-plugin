@@ -60,6 +60,17 @@
 </div>
 
 <script type="text/javascript">
+  realSensePlugin.onConnected = function () {
+    console.log("connected");
+  };
+  realSensePlugin.onDisConnected = function (msg) {
+    console.log("disconnected, msg=" + msg);
+  };
+  realSensePlugin.onError = function (isError, msg) {
+    console.log("error err=" + isError + " -- msg=" + msg);
+  };
+
+
   $('#Start').click(function () {
     realSensePlugin.start();
   });

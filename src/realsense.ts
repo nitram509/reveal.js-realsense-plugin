@@ -20,6 +20,10 @@ class Throttler {
 
 class RealSensePlugin {
 
+  public onConnected:()=>void;
+  public onDisConnected:(msg?:string)=>void;
+  public onError:(isError:boolean, msg?:string)=>void;
+
   private sense:any;
   private imageSize:PXCMSizeI32;
   private handModule:PXCMHandModule;
@@ -49,7 +53,7 @@ class RealSensePlugin {
     }).then((result:PXCMHandModule) => {
       this.handModule = result;
       this.status('Init started');
-      return this.sense.Init(this.onConnect, this.onStatus);
+      return this.sense.Init(this.onCameraConnect.bind(this), this.onCameraStatus.bind(this));
     }).then((result:any) => {
       return this.handModule.CreateActiveConfiguration();
     }).then((result:PXCMHandConfiguration) => {
@@ -119,7 +123,7 @@ class RealSensePlugin {
             this.onSwipeLeft2Right();
           }
         } else {
-          console.log("Gesture.name:" + gesture.name);
+          if (console.log) console.log("Gesture.name:" + gesture.name);
         }
       }
     }
@@ -129,7 +133,7 @@ class RealSensePlugin {
     document.getElementById("Stop").disabled = true;
     this.sense.Close().then((result)=> {
       this.status('Stopped');
-      this.clear();
+      this.fireOnDisConnected()
     });
   }
 
@@ -137,49 +141,79 @@ class RealSensePlugin {
 
   }
 
-  private onConnect(data) {
-    if (data.connected == false) {
-      //$('#alerts_status').append('Alert: ' + JSON.stringify(data) + '<br>');
+  private onCameraConnect(data) {
+    if (data.connected == true) {
+      this.fireOnConnected();
+    } else {
+      this.fireOnDisConnected('Alert: ' + JSON.stringify(data));
     }
   }
 
-  private onStatus(data) {
+  private onCameraStatus(data) {
     if (data.sts < 0) {
       this.status('Error ' + data.sts);
-      this.clear();
+      this.fireOnError(true, data.sts);
+    } else {
+      // ???
     }
   }
 
-  private clear() {
-    document.getElementById("Start").disabled = false;
+  private fireOnConnected() {
+    if (this.onConnected) {
+      try {
+        this.onConnected.apply(this.onConnected);
+      } catch (e) {
+        if (console.log) console.log("Error " + e);
+      }
+    }
+  }
+
+  private fireOnDisConnected(msg?:string) {
+    if (this.onDisConnected) {
+      try {
+        this.onDisConnected.apply(this.onDisConnected, [msg]);
+      } catch (e) {
+        if (console.log) console.log("Error " + e);
+      }
+    }
+  }
+
+  private fireOnError(isError:boolean, msg?:string) {
+    if (this.onError) {
+      try {
+        this.onError.apply(this.onError, [isError, msg]);
+      } catch (e) {
+        if (console.log) console.log("Error " + e);
+      }
+    }
   }
 
   private onSwipeRight2Left() {
     if (window['Reveal']) {
       window['Reveal'].right();
     }
-    console.log("SWIPE right -> left");
+    if (console.log) console.log("SWIPE right -> left");
   }
 
   private onSwipeLeft2Right() {
     if (window['Reveal']) {
       window['Reveal'].left();
     }
-    console.log("SWIPE left -> right");
+    if (console.log) console.log("SWIPE left -> right");
   }
 
   private onTap() {
     if (window['Reveal']) {
       window['Reveal'].toggleOverview();
     }
-    console.log("tap");
+    if (console.log) console.log("tap");
   }
 
   private onVSign() {
     if (window['Reveal']) {
       window['Reveal'].togglePause();
     }
-    console.log("v_sign");
+    if (console.log) console.log("v_sign");
   }
 
 }

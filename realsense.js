@@ -1718,7 +1718,7 @@ var RealSensePlugin = (function () {
         }).then(function (result) {
             _this.handModule = result;
             _this.status('Init started');
-            return _this.sense.Init(_this.onConnect, _this.onStatus);
+            return _this.sense.Init(_this.onCameraConnect.bind(_this), _this.onCameraStatus.bind(_this));
         }).then(function (result) {
             return _this.handModule.CreateActiveConfiguration();
         }).then(function (result) {
@@ -1790,7 +1790,8 @@ var RealSensePlugin = (function () {
                     }
                 }
                 else {
-                    console.log("Gesture.name:" + gesture.name);
+                    if (console.log)
+                        console.log("Gesture.name:" + gesture.name);
                 }
             }
         }
@@ -1800,47 +1801,87 @@ var RealSensePlugin = (function () {
         document.getElementById("Stop").disabled = true;
         this.sense.Close().then(function (result) {
             _this.status('Stopped');
-            _this.clear();
+            _this.fireOnDisConnected();
         });
     };
     RealSensePlugin.prototype.status = function (s) {
     };
-    RealSensePlugin.prototype.onConnect = function (data) {
-        if (data.connected == false) {
+    RealSensePlugin.prototype.onCameraConnect = function (data) {
+        if (data.connected == true) {
+            this.fireOnConnected();
+        }
+        else {
+            this.fireOnDisConnected('Alert: ' + JSON.stringify(data));
         }
     };
-    RealSensePlugin.prototype.onStatus = function (data) {
+    RealSensePlugin.prototype.onCameraStatus = function (data) {
         if (data.sts < 0) {
             this.status('Error ' + data.sts);
-            this.clear();
+            this.fireOnError(true, data.sts);
+        }
+        else {
         }
     };
-    RealSensePlugin.prototype.clear = function () {
-        document.getElementById("Start").disabled = false;
+    RealSensePlugin.prototype.fireOnConnected = function () {
+        if (this.onConnected) {
+            try {
+                this.onConnected.apply(this.onConnected);
+            }
+            catch (e) {
+                if (console.log)
+                    console.log("Error " + e);
+            }
+        }
+    };
+    RealSensePlugin.prototype.fireOnDisConnected = function (msg) {
+        if (this.onDisConnected) {
+            try {
+                this.onDisConnected.apply(this.onDisConnected, [msg]);
+            }
+            catch (e) {
+                if (console.log)
+                    console.log("Error " + e);
+            }
+        }
+    };
+    RealSensePlugin.prototype.fireOnError = function (isError, msg) {
+        if (this.onError) {
+            try {
+                this.onError.apply(this.onError, [isError, msg]);
+            }
+            catch (e) {
+                if (console.log)
+                    console.log("Error " + e);
+            }
+        }
     };
     RealSensePlugin.prototype.onSwipeRight2Left = function () {
         if (window['Reveal']) {
             window['Reveal'].right();
         }
-        console.log("SWIPE right -> left");
+        if (console.log)
+            console.log("SWIPE right -> left");
     };
     RealSensePlugin.prototype.onSwipeLeft2Right = function () {
         if (window['Reveal']) {
             window['Reveal'].left();
         }
-        console.log("SWIPE left -> right");
+        if (console.log)
+            console.log("SWIPE left -> right");
     };
     RealSensePlugin.prototype.onTap = function () {
         if (window['Reveal']) {
             window['Reveal'].toggleOverview();
         }
-        console.log("tap");
+        if (console.log)
+            console.log("tap");
     };
     RealSensePlugin.prototype.onVSign = function () {
         if (window['Reveal']) {
             window['Reveal'].togglePause();
         }
-        console.log("v_sign");
+        if (console.log)
+            console.log("v_sign");
     };
     return RealSensePlugin;
 })();
