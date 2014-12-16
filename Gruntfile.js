@@ -43,7 +43,7 @@ module.exports = function (grunt) {
         separator: '\n// *************************************************************************** //\n'
       },
       dist: {
-        src: ['lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js', 'build/realsense.min.js'],
+        src: ['lib/native-promise-only/lib/npo.src.js', 'lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js', 'build/realsense.min.js'],
         dest: 'realsense.js'
       }
     },
