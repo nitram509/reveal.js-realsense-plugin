@@ -31,6 +31,10 @@ module.exports = function (grunt) {
       build: {
         src: 'build/generated/realsense.js',
         dest: 'build/realsense.min.js'
+      },
+      "test-env": {
+        src: 'realsense.js',
+        dest: '../reveal.js-testenv/plugin/realsense/realsense.js'
       }
     },
 
@@ -39,14 +43,14 @@ module.exports = function (grunt) {
         separator: '\n// *************************************************************************** //\n'
       },
       dist: {
-        src: ['lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js', 'build/realsense.min.js' ],
+        src: ['lib/realsense-3.0.js', 'lib/realsenseinfo-3.0.js', 'build/realsense.min.js'],
         dest: 'realsense.js'
       }
     },
 
     watch: {
       scripts: {
-        files: ['src/**/*.*','test/**/*.*'],
+        files: ['src/**/*.*', 'test/**/*.*'],
         tasks: ['development'],
         options: {
           spawn: false
@@ -64,7 +68,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-typescript');
 
 
-  grunt.registerTask('default', ['typescript', 'uglify', 'concat']);
-  grunt.registerTask('development', ['typescript', 'copy', 'concat']);
+  grunt.registerTask('default', ['typescript', 'uglify', 'concat', 'copy:test-env']);
+  grunt.registerTask('development', ['typescript', 'copy:build', 'concat', 'copy:test-env']);
 
 };
