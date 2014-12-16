@@ -1639,7 +1639,7 @@ function RealSenseInfo(components, callback) {
         xhr.open("GET", url, true);
         xhr.timeout = 1000;
         xhr.onreadystatechange = function () {
-            if (xhr.readyState == 4) {
+            if (xhr.readyState == 4 && xhr.responseText.length > 0) {
                 var info = JSON.parse(xhr.responseText);
                 info.responseText = xhr.responseText;
                 info.IsBrowserSupported = "WebSocket" in window;
