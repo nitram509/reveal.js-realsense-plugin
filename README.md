@@ -21,3 +21,8 @@ Reveal.initialize({
   ]
 });
 ````
+
+## Demo video
+
+For the Intel AppChallenge 2014 I've create a demo video:
+https://www.youtube.com/watch?v=l5kDcBMkyXQ
