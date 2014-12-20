@@ -4,6 +4,8 @@ A plugin for [reveal.js](http://lab.hakim.se/reveal-js/)
 (by Hakim El Hattab) that lets you control slides via
 [Intel RealSense](https://software.intel.com/realsense) input devices.
 
+*This plugin is still in development. You may experience some issues while using it.*
+
 ## Usage / Installation
 
 Just copy this repository into your reveal.js presentation to `/plugin/realsense`.
