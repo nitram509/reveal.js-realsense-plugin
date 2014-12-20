@@ -3,4 +3,6 @@
 node_modules
 build
 
-lib/jquery/src
+## exclude bower managed files
+lib/jquery
+lib/native-promise-only
