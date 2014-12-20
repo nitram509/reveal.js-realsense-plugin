@@ -4,7 +4,7 @@
   "description": "A plugin for reveal.js (by Hakim El Hattab) that lets you control slides via Intel RealSense input devices.",
   "main": "realsense.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Info: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
